@@ -2,6 +2,7 @@ package hudson.plugins.android_emulator;
 
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -33,6 +34,8 @@ import hudson.util.FormValidation;
 import hudson.util.NullStream;
 import jenkins.model.ArtifactManager;
 import jenkins.model.Jenkins;
+import jenkins.plugin.android.emulator.AndroidSDKUtil;
+import jenkins.plugin.android.emulator.tools.AndroidSDKInstallation;
 import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
@@ -187,6 +190,33 @@ public class AndroidEmulator extends BuildWrapper implements Serializable {
     @SuppressWarnings({"unchecked", "rawtypes"})
     public Environment setUp(AbstractBuild build, final Launcher launcher, BuildListener listener)
             throws IOException, InterruptedException {
+
+        // test variables
+        FilePath workspace = build.getWorkspace();
+        EnvVars initialEnvironment = build.getEnvironment(listener);
+        String sdkInstallationName = "tools 3859397";
+
+        // get specific installation for the node
+        AndroidSDKInstallation sdk = AndroidSDKUtil.getAndroidSDK(sdkInstallationName);
+        if (sdk == null) {
+            throw new IOException(jenkins.plugin.android.emulator.Messages.noInstallationFound(sdkInstallationName));
+        }
+        Computer computer = workspace.toComputer();
+        if (computer == null) {
+            throw new AbortException(jenkins.plugin.android.emulator.Messages.nodeNotAvailable());
+        }
+        Node node = computer.getNode();
+        if (node == null) {
+            throw new AbortException(jenkins.plugin.android.emulator.Messages.nodeNotAvailable());
+        }
+        sdk = sdk.forNode(node, listener);
+        sdk = sdk.forEnvironment(initialEnvironment);
+        String exec = sdk.getSDKManager(launcher);
+        if (exec == null) {
+            throw new AbortException(jenkins.plugin.android.emulator.Messages.noExecutableFound(sdk.getHome()));
+        }
+        sdk.buildEnvVars(initialEnvironment);
+        if (1 == 1) throw new AbortException();
         final PrintStream logger = listener.getLogger();
         if (descriptor == null) {
             descriptor = Jenkins.get().getDescriptorByType(DescriptorImpl.class);
@@ -249,7 +279,7 @@ public class AndroidEmulator extends BuildWrapper implements Serializable {
         }
 
         // SDK location
-        Node node = Computer.currentComputer().getNode();
+// FIXME: Node node = Computer.currentComputer().getNode();
         String configuredAndroidSdkRoot = Utils.expandVariables(envVars, buildVars, descriptor.androidHome);
 
         // Confirm that the required SDK tools are available
