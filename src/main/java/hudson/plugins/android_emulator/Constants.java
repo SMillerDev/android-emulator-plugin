@@ -86,16 +86,18 @@ public interface Constants {
     static final String ENV_VAR_ANDROID_AVD_SKIN = "ANDROID_AVD_SKIN";
     // Environment variable set by the plugin to specify the telnet interface port.
     static final String ENV_VAR_ANDROID_AVD_USER_PORT = "ANDROID_AVD_USER_PORT";
+    /**
+     * @deprecated Use {@link #ENV_VAR_ANDROID_SDK_ROOT} instead if this.
+     */
     @Deprecated
     static final String ENV_VAR_ANDROID_HOME = "ANDROID_HOME";
     static final String ENV_VAR_ANDROID_SDK = "ANDROID_SDK";
-    /**
-     * Location of SDK related data/user files.
-     * Example: C:\Users\<USERNAME>\.android\ or ~/.android/
-     */
     static final String ENV_VAR_ANDROID_SDK_HOME = "ANDROID_SDK_HOME";
     /**
-     * Installation directory of Android SDK package.
+     * Sets the path to the SDK installation directory. Once set, the value does
+     * not typically change, and can be shared by multiple users on the same
+     * machine.
+     * <p>
      * Example: C:\AndroidSDK or ~/android-sdk/
      */
     static final String ENV_VAR_ANDROID_SDK_ROOT = "ANDROID_SDK_ROOT";
